@@ -1,6 +1,5 @@
 import React from 'react';
 import './App.css';
-import VideoChat from './components/VideoChat';
 import VideoConnect from './components/VideoConnect';
 import Lobby from './components/lobby';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
