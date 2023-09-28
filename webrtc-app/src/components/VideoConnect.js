@@ -320,4 +320,4 @@ function VideoConnect() {
 export default VideoConnect;
 
 
-//to fix: when user  disable cam/mic, it doesn disable for other user, figure out css?, code editor doesnt clear? (need a unique room name for code editor)
+//to fix: when user  disable cam/mic, it doesn disable for other user, figure out css?
