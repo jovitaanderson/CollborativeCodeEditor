@@ -18,17 +18,19 @@ let editorContent = ''
 io.on("connection", (socket) => {
 	socket.emit("me", socket.id)
 
-	// socket.on("toggleMic", () => {
-	// 	// Handle toggling of microphone on the server
-	// 	// Broadcast the toggleMic event to other users in the same room
-	// 	io.to(socket.id).emit("otherUserToggledMic");
-	//   });
+	socket.on("toggleMic", (newMicState) => {
+		socket.to(socket.id).emit("otherUserToggledMic", {
+		  userId: socket.id,
+		  micState: newMicState,
+		});
+	  });
 	
-	//   socket.on("toggleCamera", () => {
-	// 	// Handle toggling of camera on the server
-	// 	// Broadcast the toggleCamera event to other users in the same room
-	// 	io.to(socket.id).emit("otherUserToggledCamera");
-	//   });
+	socket.on("toggleCamera", (newCameraState) => {
+		socket.to(socket.id).emit("otherUserToggledCamera", {
+		  userId: socket.id,
+		  cameraState: newCameraState,
+		});
+	});
 	
 	socket.on("disconnect", () => {
 		socket.broadcast.emit("callEnded")

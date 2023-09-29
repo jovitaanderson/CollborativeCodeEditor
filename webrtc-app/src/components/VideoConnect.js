@@ -55,6 +55,7 @@ function VideoConnect() {
   const classes = useStyles();
   const [me, setMe] = useState("");
   const [stream, setStream] = useState();
+  const [otherStream, setOtherStream] = useState();
   const [receivingCall, setReceivingCall] = useState(false);
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState();
@@ -70,10 +71,53 @@ function VideoConnect() {
 
   const [micOn, setMicOn] = useState(true);
   const [cameraOn, setCameraOn] = useState(true);
+  const [otherMicOn, setOtherMicOn] = useState(true);
+  const [otherCameraOn, setOtherCameraOn] = useState(true);
 
   const [editorText, setEditorText] = useState("");
 
   useEffect(() => {
+    const getOtherMediaWithStatus = async () => {
+      try {
+        const otherStream = navigator.mediaDevices.getUserMedia({
+          video: otherCameraOn,
+          audio: otherMicOn,
+        });
+        setOtherStream(otherStream);
+        userVideo.current.srcObject = otherStream;
+      } catch (err) {
+        if (
+          err.name === "NotFoundError" ||
+          err.name === "DevicesNotFoundError"
+        ) {
+          //required track is missing
+        } else if (
+          err.name === "NotReadableError" ||
+          err.name === "TrackStartError"
+        ) {
+          //webcam or mic are already in use
+        } else if (
+          err.name === "OverconstrainedError" ||
+          err.name === "ConstraintNotSatisfiedError"
+        ) {
+          //constraints can not be satisfied by avb. devices
+        } else if (
+          err.name === "NotAllowedError" ||
+          err.name === "PermissionDeniedError"
+        ) {
+          //permission denied in browser
+        } else if (err.name === "TypeError" || err.name === "TypeError") {
+          //empty constraints object
+        } else {
+          console.error("Error accessing user media:", err);
+        }
+      
+        const otherStream = null;
+        setOtherStream(otherStream);
+        userVideo.current.srcObject = otherStream;
+      }
+    };
+
     const getUserMediaWithStatus = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -137,9 +181,21 @@ function VideoConnect() {
       }
     });
 
+    socket.on("otherUserToggledMic", ({ userId, micState }) => {
+      if (userId !== socket.id) {
+        setOtherMicOn(micState);
+      }
+    });
+
+    socket.on("otherUserToggledCamera", ({ userId, cameraState }) => {
+      if (userId !== socket.id) {
+        setOtherCameraOn(cameraState);
+      }
+    });
     // Call the getUserMedia function whenever micOn or cameraOn changes
     getUserMediaWithStatus();
-  }, [micOn, cameraOn]);
+    getOtherMediaWithStatus();
+  }, [micOn, cameraOn, otherMicOn, otherCameraOn]);
 
   const handleEditorChange = (newValue) => {
     setEditorText(newValue);
@@ -178,7 +234,7 @@ function VideoConnect() {
     const peer = new Peer({
       initiator: false,
       trickle: false,
-      stream: stream,
+      stream : stream,
     });
 
     peer.on("signal", (data) => {
@@ -200,10 +256,12 @@ function VideoConnect() {
 
   const toggleMic = () => {
     setMicOn((prevMicOn) => !prevMicOn);
+    socket.emit("toggleMic", micOn);
   };
 
   const toggleCamera = () => {
     setCameraOn((prevCameraOn) => !prevCameraOn);
+    socket.emit("toggleMic", cameraOn);
   };
 
   return (
@@ -320,4 +378,4 @@ function VideoConnect() {
 export default VideoConnect;
 
 
-//to fix: when user  disable cam/mic, it doesn disable for other user, figure out css?
+//to fix: when user  disable cam/mic, it doesn disable for other user, figure out css?, code editor doesnt clear? (need a unique room name for code editor)
