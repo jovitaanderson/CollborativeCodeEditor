@@ -182,13 +182,13 @@ function VideoConnect() {
     });
 
     socket.on("otherUserToggledMic", ({ userId, micState }) => {
-      if (userId !== socket.id) {
+      if (userId !== socket.id) { // @TODO If the user who toggled mic is not the current user (Required to change by parsing userId)
         setOtherMicOn(micState);
       }
     });
 
     socket.on("otherUserToggledCamera", ({ userId, cameraState }) => {
-      if (userId !== socket.id) {
+      if (userId !== socket.id) { // @TODO If the user who toggled camera is not the current user (Required to change by parsing userId)
         setOtherCameraOn(cameraState);
       }
     });
